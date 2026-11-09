@@ -1,0 +1,6 @@
+data/*
+!data/README.md
+outputs/
+__pycache__/
+assets_usd/hot3d/
+.claude/
