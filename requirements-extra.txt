@@ -1,3 +1,4 @@
 # đã có sẵn trong venv: trimesh, pyyaml, pxr. Chỉ cần thêm khi đọc dữ liệu thật:
 # projectaria-tools   # đọc VRS (pip install 'projectaria-tools[all]')
 # hot3d toolkit: git clone https://github.com/facebookresearch/hot3d  (dùng Hot3dDataProvider)
+# smplx: tay MANO (pip install --no-deps smplx; đã cài trong venv). Cần data/mano/MANO_{LEFT,RIGHT}.pkl

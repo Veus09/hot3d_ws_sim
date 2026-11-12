@@ -4,3 +4,4 @@ outputs/
 __pycache__/
 assets_usd/hot3d/
 .claude/
+Hot3D*_download_urls.json

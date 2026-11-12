@@ -1,6 +1,6 @@
 # HANDOFF — hot3d_ws_sim
 
-Cập nhật: 2026-11-09. Mục tiêu: đưa dữ liệu HOT3D vào Isaac Sim. Giai đoạn 1 (vật thể + pose replay + bàn xấp xỉ) đã chạy được. Tay MANO và camera Aria/Quest chưa làm.
+Cập nhật: 2026-11-09. Mục tiêu: đưa dữ liệu HOT3D vào Isaac Sim. Đã chạy được: vật thể + pose replay + bàn xấp xỉ + tay MANO. Camera Aria/Quest chưa làm.
 
 ## Trạng thái
 
@@ -9,9 +9,11 @@ Cập nhật: 2026-11-09. Mục tiêu: đưa dữ liệu HOT3D vào Isaac Sim. G
 | Chuyển object library (35 file trong `assets/`) sang USD (`01`) | Xong, ra `assets_usd/hot3d/o_<uid>.usd` |
 | Vật thể proxy khi chưa có dataset (`02`) | Xong |
 | Xem/thả vật thể (`03`) | Xong, ra `outputs/view_objects.png` |
-| Replay pose GT vật thể + kính VR của sequence `P0003_d0ad9b47` (`04`) | Chạy được. Đã có ảnh/video thử trong `outputs/replay/` |
+| Replay pose GT vật thể + kính VR + tay MANO (`04 --video`) | Chạy được, ra `outputs/replay/<seq>.mp4` |
+| Video so sánh người thật / sim (`05_compare_video.py`, mp4) | Xong, ra `outputs/replay/<seq>_compare_*.mp4` |
+| Tải dữ liệu (`00_download.py`) | Đã tải assets + GT + tay của 424 sequence (8.7 GB giải nén) |
 | Bàn (rect + round) | Xấp xỉ, dựng từ pose vật thể, KHÔNG phải số đo thật (xem `TABLES` trong `04`, và `topdown.png`) |
-| Tay MANO | Chưa làm |
+| Tay MANO (`src/hot3d_sim/mano.py`, vẽ trong `04`) | Xong. Đã kiểm tra: lúc cầm, đầu ngón cách bề mặt vật 0.6-2 mm |
 | Camera Aria/Quest (render theo `camera_models.json`) | Chưa làm |
 
 ## Chạy lại
@@ -23,15 +25,13 @@ python scripts/04_replay_poses.py --seq P0003_d0ad9b47 --step 2   # ghi outputs/
 ffmpeg ...  # ghép frames thành mp4 (lệnh ffmpeg dùng trước đó không được lưu lại)
 ```
 
-Chỉ chạy 1 tiến trình Isaac Sim (8 GB VRAM). Đĩa `/` còn ít (~9 GB).
-
 ## Dữ liệu (không có trong repo)
 
 Repo không chứa dữ liệu. Phải đặt thủ công, vì license HOT3D/MANO riêng và các file JSON link tải có chữ ký, hết hạn sau 14 ngày:
 - `data/hot3d_dataset/assets/`: object library (`*.glb`, `instance.json`). `04` đọc `instance.json` để lấy tên vật thể.
 - `data/hot3d_dataset/P0003_d0ad9b47/`: sequence Quest. Có `dynamic_objects.csv`, `headset_trajectory.csv`, `mano_hand_pose_trajectory.jsonl`, `camera_models.json`, `box2d_*.csv`, `masks/`, `preview_rgb.mp4`.
 - `data/dl/`: các file zip/mp4 đã tải.
-- `data/mano/MANO_RIGHT.pkl`, `MANO_LEFT.pkl`: chưa có, cần đăng ký license MANO.
+- `data/mano/MANO_RIGHT.pkl`, `MANO_LEFT.pkl`: đã có (license MANO). `data/mano/plain/` là bản numpy thuần tự sinh.
 - `assets_usd/hot3d/` là bản chuyển từ asset có license, nên không đưa lên git. Tạo lại bằng `01`.
 
 ## Quy ước quan trọng (dễ sai)
@@ -43,8 +43,8 @@ Repo không chứa dữ liệu. Phải đặt thủ công, vì license HOT3D/MAN
 
 ## Việc tiếp theo (gợi ý theo lộ trình README)
 
-1. Tay MANO: xin MANO pkl vào `data/mano/`, đọc `mano_hand_pose_trajectory.jsonl`, dựng mesh tay và gắn vào replay trong `04`.
+1. Trích điểm chạm tay-vật (`06_extract_contacts.py`, chưa viết) cho bài toán affordance.
 2. Camera Aria/Quest: dùng `camera_models.json` + `headset_trajectory.csv` để render đúng góc nhìn, so với `preview_rgb.mp4`.
 3. Bàn/phòng: thay bàn xấp xỉ bằng số đo thật nếu có.
-4. Lưu lại lệnh ffmpeg ghép video vào một script (hiện chưa có).
+4. Sequence dài: chạy 1 lần cả sequence được (máy 32 GB; lần sập trước do tắt máy đột ngột, không phải hết RAM). Vẫn có thể render theo đoạn bằng `--resume --start N --max_frames N`. `--video` tự ghép mp4.
 5. Không có test hay CI. Kiểm tra bằng cách xem ảnh/video trong `outputs/`.
