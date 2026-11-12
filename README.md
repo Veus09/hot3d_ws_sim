@@ -112,7 +112,7 @@ Script dùng simulator phải tạo `AppLauncher` của Isaac Lab **trước** k
 
 ## Lọc video
 
-Video trong `outputs/replay/sim/` được duyệt và cắt frame bằng web tool **sim_dataset_verify** (repo riêng):
+Video trong `outputs/replay/sim/` được duyệt và cắt frame bằng web tool [**sim_dataset_verify**](https://github.com/Veus09/sim_dataset_verify) (repo riêng):
 xem toàn bộ frame, đánh dấu xóa, xem trước, lưu đè mp4, loại video; nhật ký ghi ở `outputs/replay/sim/edits.csv`.
 
 ## Tài liệu khác
