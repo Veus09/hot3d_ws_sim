@@ -1,6 +1,9 @@
 data/*
 !data/README.md
-outputs/
+outputs/*
+!outputs/tasks/
+outputs/tasks/*/
+outputs/tasks/_selftest_*
 __pycache__/
 assets_usd/hot3d/
 .claude/

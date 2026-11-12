@@ -101,3 +101,25 @@ def load_mano_trajectory(path):
             rows.append((r["timestamp_ns"], r["hand_poses"]))
     rows.sort(key=lambda x: x[0])
     return rows
+
+
+@torch.no_grad()
+def vertices_batch(hands, hand_jsons, side, batch=1024, return_joints=False):
+    """Như ManoHands.vertices nhưng cho cả list hand_json (cùng 1 tay) -> (N,778,3), nhanh hơn gọi từng frame.
+    return_joints=True -> thêm (N,16,3) khớp MANO (0 = cổ tay)."""
+    from scipy.spatial.transform import Rotation
+
+    if not hand_jsons:
+        e = np.zeros((0, 778, 3), np.float32)
+        return (e, np.zeros((0, 16, 3), np.float32)) if return_joints else e
+    q = np.array([h["wrist_xform"]["q_wxyz"] for h in hand_jsons], np.float64)
+    rot = Rotation.from_quat(q[:, [1, 2, 3, 0]]).as_rotvec()
+    f = lambda x: torch.tensor(np.asarray(x, dtype=np.float32))
+    betas, pose = f([h["betas"] for h in hand_jsons]), f([h["pose"] for h in hand_jsons])
+    transl, rot = f([h["wrist_xform"]["t_xyz"] for h in hand_jsons]), f(rot)
+    out, jo = [], []
+    for s in range(0, len(hand_jsons), batch):
+        sl = slice(s, s + batch)
+        o = hands.layers[side](betas=betas[sl], global_orient=rot[sl], hand_pose=pose[sl], transl=transl[sl])
+        out.append(o.vertices.numpy()); jo.append(o.joints[:, :16].numpy())
+    return (np.concatenate(out), np.concatenate(jo)) if return_joints else np.concatenate(out)
